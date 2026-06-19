@@ -14,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 /**
  * Servicio que contiene toda la logica de negocio de Pokemon.
