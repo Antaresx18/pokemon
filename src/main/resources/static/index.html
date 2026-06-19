@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PokéCaptura - Entrenadores & Pokémon</title>
+    <!-- Google Fonts: Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-primary: #0a0f1d;
+            --bg-secondary: #131b2e;
+            --bg-card: #1d263b;
+            --text-primary: #f3f4f6;
+            --text-secondary: #9ca3af;
+            --accent-primary: #6366f1; /* Indigo */
+            --accent-hover: #4f46e5;
+            --accent-success: #10b981; /* Esmeralda */
+            --accent-danger: #ef4444;  /* Rojo */
+            
+            /* Colores de Tipos */
+            --tipo-planta: #10b981;
+            --tipo-agua: #3b82f6;
+            --tipo-fuego: #f97316;
+            --tipo-electrico: #eab308;
+            
+            --border-glow: rgba(99, 102, 241, 0.15);
+            --transition-speed: 0.3s;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* Header con efecto glassmorphic */
+        header {
+            background: rgba(19, 27, 46, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 1.25rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo-icon {
+            font-size: 2rem;
+            animation: pulse-pokeball 2s infinite ease-in-out;
+        }
+
+        @keyframes pulse-pokeball {
+            0%, 100% { transform: scale(1); filter: drop-shadow(0 0 2px rgba(99, 102, 241, 0.5)); }
+            50% { transform: scale(1.1); filter: drop-shadow(0 0 10px rgba(99, 102, 241, 0.8)); }
+        }
+
+        .logo-text {
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #a5b4fc, #6366f1, #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+        }
+
+        .trainer-status-pill {
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 9999px;
+            padding: 0.5rem 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: all var(--transition-speed) ease;
+        }
+
+        .trainer-status-pill.logged-in {
+            background: rgba(16, 185, 129, 0.1);
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--accent-danger);
+        }
+
+        .logged-in .status-dot {
+            background-color: var(--accent-success);
+            box-shadow: 0 0 8px var(--accent-success);
+        }
+
+        /* Contenedor Principal */
+        main {
+            flex: 1;
+            padding: 2.5rem 2rem;
+            max-width: 1400px;
+            width: 100%;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 2.5rem;
+        }
+
+        @media (max-width: 1024px) {
+            main {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Paneles */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .panel {
+            background-color: var(--bg-secondary);
+            border-radius: 1.25rem;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            padding: 1.75rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            transition: transform var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
+        }
+
+        .panel:hover {
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
+        }
+
+        .panel-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 1.25rem;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 0.75rem;
+        }
+
+        /* Formularios */
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .form-control {
+            width: 100%;
+            background-color: var(--bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 0.75rem;
+            padding: 0.75rem 1rem;
+            color: white;
+            font-size: 0.95rem;
+            transition: all var(--transition-speed) ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
+        }
+
+        /* Botones */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            width: 100%;
+            background-color: var(--accent-primary);
+            color: white;
+            border: none;
+            border-radius: 0.75rem;
+            padding: 0.8rem 1.5rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition-speed) ease;
+        }
+
+        .btn:hover {
+            background-color: var(--accent-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+        }
+
+        .btn-outline:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.25);
+        }
+
+        /* Atajos Entrenadores */
+        .trainer-quick-select {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+
+        .quick-trainer-btn {
+            background-color: var(--bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 0.75rem;
+            padding: 0.75rem 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: white;
+            cursor: pointer;
+            transition: all var(--transition-speed) ease;
+            text-align: left;
+        }
+
+        .quick-trainer-btn:hover {
+            border-color: var(--accent-primary);
+            background-color: rgba(99, 102, 241, 0.05);
+            transform: scale(1.02);
+        }
+
+        .quick-trainer-info h4 {
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        .quick-trainer-info p {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .quick-trainer-btn .arrow {
+            color: var(--text-secondary);
+            font-weight: bold;
+        }
+
+        /* Layout de Contenido Principal */
+        .content-area {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        /* Filtros y Cabecera */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: white;
+        }
+
+        .filter-container {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            background-color: var(--bg-secondary);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 9999px;
+            padding: 0.4rem 1.1rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all var(--transition-speed) ease;
+        }
+
+        .filter-btn:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: white;
+        }
+
+        .filter-btn.active {
+            background-color: var(--accent-primary);
+            color: white;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 10px rgba(99, 102, 241, 0.4);
+        }
+
+        /* Grid de Pokemones */
+        .pokemon-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        /* Tarjeta de Pokemon */
+        .pokemon-card {
+            background-color: var(--bg-secondary);
+            border-radius: 1.25rem;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            position: relative;
+            overflow: hidden;
+            transition: all var(--transition-speed) ease;
+        }
+
+        .pokemon-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--tipo-color, var(--accent-primary));
+        }
+
+        .pokemon-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .pokemon-card.captured {
+            background: linear-gradient(135deg, var(--bg-secondary) 70%, rgba(16, 185, 129, 0.03));
+            border-color: rgba(16, 185, 129, 0.15);
+        }
+
+        .pokemon-card.captured::after {
+            content: 'Capturado';
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background-color: rgba(16, 185, 129, 0.15);
+            color: var(--accent-success);
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 0.2rem 0.6rem;
+            border-radius: 9999px;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .pokemon-badge {
+            background-color: rgba(255, 255, 255, 0.06);
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 0.2rem 0.6rem;
+            border-radius: 9999px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            width: fit-content;
+        }
+
+        .pokemon-badge.planta { background-color: rgba(16, 185, 129, 0.15); color: var(--tipo-planta); }
+        .pokemon-badge.agua { background-color: rgba(59, 130, 246, 0.15); color: var(--tipo-agua); }
+        .pokemon-badge.fuego { background-color: rgba(249, 115, 22, 0.15); color: var(--tipo-fuego); }
+        .pokemon-badge.electrico { background-color: rgba(234, 179, 8, 0.15); color: var(--tipo-electrico); }
+
+        .pokemon-name {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: white;
+            margin-top: 0.25rem;
+        }
+
+        .pokemon-desc {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.4;
+            flex-grow: 1;
+        }
+
+        .pokemon-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            padding-top: 0.75rem;
+            margin-top: 0.5rem;
+        }
+
+        .pokemon-meta span strong {
+            color: white;
+        }
+
+        /* Notificación Toast */
+        .toast-container {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            z-index: 1000;
+        }
+
+        .toast {
+            background-color: var(--bg-secondary);
+            border-radius: 0.75rem;
+            border-left: 4px solid var(--accent-primary);
+            padding: 1rem 1.5rem;
+            color: white;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1.5rem;
+            min-width: 300px;
+            max-width: 450px;
+            transform: translateX(120%);
+            transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast.success { border-left-color: var(--accent-success); }
+        .toast.danger { border-left-color: var(--accent-danger); }
+
+        .toast-content {
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+        }
+
+        .toast-title {
+            font-weight: 700;
+            font-size: 0.95rem;
+        }
+
+        .toast-msg {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .toast-close {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 1.1rem;
+        }
+
+        /* Empty state */
+        .empty-state {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 4rem 2rem;
+            background-color: var(--bg-secondary);
+            border-radius: 1.25rem;
+            border: 2px dashed rgba(255, 255, 255, 0.08);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .empty-icon {
+            font-size: 3rem;
+            color: var(--text-secondary);
+            opacity: 0.5;
+        }
+
+        .empty-text {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        /* Pestañas */
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.05);
+            margin-bottom: 1.5rem;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            position: relative;
+            transition: color var(--transition-speed) ease;
+        }
+
+        .tab-btn:hover {
+            color: white;
+        }
+
+        .tab-btn.active {
+            color: var(--accent-primary);
+        }
+
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background-color: var(--accent-primary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo-container">
+            <span class="logo-icon">🔮</span>
+            <h1 class="logo-text">PokéCaptura</h1>
+        </div>
+        <div class="trainer-status-pill" id="trainerStatus">
+            <div class="status-dot"></div>
+            <span id="trainerStatusText">Entrenador no ingresado</span>
+        </div>
+    </header>
+
+    <main>
+        <!-- Sidebar Izquierda: Login y Registro -->
+        <section class="sidebar">
+            
+            <!-- Panel 1: Autenticación -->
+            <div class="panel">
+                <h3 class="panel-title">🔑 Acceso Entrenador</h3>
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="loginEmail">Correo Electrónico</label>
+                        <input type="email" id="loginEmail" class="form-control" placeholder="nombre@correo.com" required>
+                    </div>
+                    <button type="submit" class="btn">Ingresar</button>
+                </form>
+                
+                <div class="trainer-quick-select">
+                    <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.5rem; text-transform: uppercase; font-weight: 600;">Acceso rápido de prueba:</p>
+                    <button class="quick-trainer-btn" onclick="quickLogin('ash@gmail.com')">
+                        <div class="quick-trainer-info">
+                            <h4>Ash Ketchum</h4>
+                            <p>ash@gmail.com</p>
+                        </div>
+                        <span class="arrow">→</span>
+                    </button>
+                    <button class="quick-trainer-btn" onclick="quickLogin('misty@gmail.com')">
+                        <div class="quick-trainer-info">
+                            <h4>Misty Williams</h4>
+                            <p>misty@gmail.com</p>
+                        </div>
+                        <span class="arrow">→</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Panel 2: Registrar Pokémon -->
+            <div class="panel">
+                <h3 class="panel-title">✨ Registrar Nuevo Pokémon</h3>
+                <form id="registerPokemonForm">
+                    <div class="form-group">
+                        <label for="pokeNombre">Nombre</label>
+                        <input type="text" id="pokeNombre" class="form-control" placeholder="Ej. Squirtle" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="pokeDesc">Descripción</label>
+                        <input type="text" id="pokeDesc" class="form-control" placeholder="Ej. Pokémon tortuga de agua" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="pokeFecha">Fecha Descubrimiento</label>
+                        <input type="date" id="pokeFecha" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="pokeGeneracion">Generación</label>
+                        <input type="number" id="pokeGeneracion" class="form-control" min="1" value="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="pokeTipo">Tipo Pokémon</label>
+                        <select id="pokeTipo" class="form-control" required>
+                            <option value="11111111-1111-1111-1111-111111111111">Planta</option>
+                            <option value="22222222-2222-2222-2222-222222222222">Agua</option>
+                            <option value="33333333-3333-3333-3333-333333333333">Fuego</option>
+                            <option value="44444444-4444-4444-4444-444444444444">Eléctrico</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-outline" style="border-color: var(--accent-primary); color: #a5b4fc;">Registrar Pokémon</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- Área Central: Lista de Pokémones -->
+        <section class="content-area">
+            
+            <!-- Pestañas de Vista -->
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('tab-capturar')">🛒 Centro de Captura</button>
+                <button class="tab-btn" onclick="switchTab('tab-mis-pokemons')">🎒 Mis Pokémon Capturados</button>
+            </div>
+
+            <!-- TAB 1: Capturar / Ver Pokémones del Sistema -->
+            <div id="tab-capturar" class="tab-content active">
+                <div class="section-header" style="margin-bottom: 1.5rem;">
+                    <h2 class="section-title">Pokémon en el Sistema</h2>
+                    
+                    <div class="filter-container">
+                        <button class="filter-btn active" onclick="filterPokemons('ALL', this)">Todos</button>
+                        <button class="filter-btn" onclick="filterPokemons('11111111-1111-1111-1111-111111111111', this)">Planta</button>
+                        <button class="filter-btn" onclick="filterPokemons('22222222-2222-2222-2222-222222222222', this)">Agua</button>
+                        <button class="filter-btn" onclick="filterPokemons('33333333-3333-3333-3333-333333333333', this)">Fuego</button>
+                        <button class="filter-btn" onclick="filterPokemons('44444444-4444-4444-4444-444444444444', this)">Eléctrico</button>
+                    </div>
+                </div>
+
+                <div class="pokemon-grid" id="allPokemonsGrid">
+                    <!-- Pokémones cargados por JS -->
+                    <div class="empty-state">
+                        <span class="empty-icon">⏳</span>
+                        <p class="empty-text">Cargando Pokémones desde la API...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: Mis Pokémon Capturados -->
+            <div id="tab-mis-pokemons" class="tab-content">
+                <div class="section-header" style="margin-bottom: 1.5rem;">
+                    <h2 class="section-title">Mi Mochila de Pokémon</h2>
+                </div>
+
+                <div class="pokemon-grid" id="capturedPokemonsGrid">
+                    <div class="empty-state">
+                        <span class="empty-icon">🔒</span>
+                        <p class="empty-text">Inicia sesión con un entrenador para ver sus Pokémon capturados.</p>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+    </main>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script>
+        // Configuración global del API
+        const API_BASE = window.location.origin;
+
+        // Estado de la Aplicación
+        let currentTrainerUuid = null;
+        let currentTrainerEmail = null;
+        let allPokemons = [];
+        let capturedPokemonUuids = new Set();
+        let activeFilter = 'ALL';
+
+        // Tipos de Pokemon conocidos
+        const TIPOS = {
+            '11111111-1111-1111-1111-111111111111': { name: 'Planta', class: 'planta', color: '#10b981' },
+            '22222222-2222-2222-2222-222222222222': { name: 'Agua', class: 'agua', color: '#3b82f6' },
+            '33333333-3333-3333-3333-333333333333': { name: 'Fuego', class: 'fuego', color: '#f97316' },
+            '44444444-4444-4444-4444-444444444444': { name: 'Electrico', class: 'electrico', color: '#eab308' }
+        };
+
+        // Al iniciar la aplicación
+        document.addEventListener('DOMContentLoaded', () => {
+            // Establecer fecha por defecto en el formulario como hoy
+            const dateInput = document.getElementById('pokeFecha');
+            if (dateInput) {
+                dateInput.value = new Date().toISOString().split('T')[0];
+            }
+
+            // Cargar todos los pokémones de la base de datos
+            loadAllPokemons();
+
+            // Escuchar submit de login
+            document.getElementById('loginForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const email = document.getElementById('loginEmail').value.trim();
+                performLogin(email);
+            });
+
+            // Escuchar submit de registro de pokemon
+            document.getElementById('registerPokemonForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                registerNewPokemon();
+            });
+        });
+
+        // Alternar entre pestañas
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            // Buscar cuál es el botón clickeado
+            const targetBtn = Array.from(document.querySelectorAll('.tab-btn')).find(btn => 
+                (tabId === 'tab-capturar' && btn.innerText.includes('Centro')) || 
+                (tabId === 'tab-mis-pokemons' && btn.innerText.includes('Mochila'))
+            );
+            if (targetBtn) targetBtn.classList.add('active');
+            
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        // Mostrar notificaciones Toast flotantes
+        function showToast(title, message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            toast.innerHTML = `
+                <div class="toast-content">
+                    <span class="toast-title">${title}</span>
+                    <span class="toast-msg">${message}</span>
+                </div>
+                <button class="toast-close" onclick="this.parentElement.remove()">✕</button>
+            `;
+            
+            container.appendChild(toast);
+            
+            // Forzar reflow para animación
+            toast.offsetHeight;
+            toast.classList.add('show');
+            
+            // Auto borrar después de 5 segundos
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 5000);
+        }
+
+        // Login rápido desde los botones
+        function quickLogin(email) {
+            document.getElementById('loginEmail').value = email;
+            performLogin(email);
+        }
+
+        // Consumir API de Login del Entrenador
+        async function performLogin(email) {
+            try {
+                const response = await fetch(`${API_BASE}/entrenador/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || 'Error al intentar iniciar sesión');
+                }
+
+                currentTrainerUuid = data.uid;
+                currentTrainerEmail = email;
+
+                // Actualizar barra de estado
+                const statusPill = document.getElementById('trainerStatus');
+                statusPill.className = 'trainer-status-pill logged-in';
+                document.getElementById('trainerStatusText').innerText = `Conectado: ${email}`;
+
+                showToast('Acceso Correcto', `Bienvenido Entrenador. ID: ${currentTrainerUuid}`, 'success');
+
+                // Cargar pokémones del entrenador
+                await loadCapturedPokemons();
+                // Refrescar la vista principal para pintar cuáles ya están capturados
+                renderAllPokemons();
+            } catch (err) {
+                showToast('Error de Ingreso', err.message, 'danger');
+            }
+        }
+
+        // Obtener pokémones capturados por el entrenador actual
+        async function loadCapturedPokemons() {
+            if (!currentTrainerUuid) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/entrenador/${currentTrainerUuid}/pokemons`);
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Error al cargar pokémones del entrenador');
+                }
+
+                // Guardar los UUIDs capturados en un Set
+                capturedPokemonUuids.clear();
+                data.forEach(p => capturedPokemonUuids.add(p.uuid));
+
+                renderCapturedPokemons(data);
+            } catch (err) {
+                showToast('Error', err.message, 'danger');
+            }
+        }
+
+        // Consumir API para obtener todos los pokémones de los 4 tipos del sistema
+        async function loadAllPokemons() {
+            try {
+                const tipoUuids = Object.keys(TIPOS);
+                let loadedPokemons = [];
+
+                // Consultar en paralelo los pokémones de cada tipo
+                const promises = tipoUuids.map(uuid => 
+                    fetch(`${API_BASE}/pokemons/${uuid}`)
+                        .then(res => res.ok ? res.json() : [])
+                );
+
+                const results = await Promise.all(promises);
+                
+                // Unir todas las listas de pokémones
+                results.forEach(list => {
+                    loadedPokemons = loadedPokemons.concat(list);
+                });
+
+                // Guardar en la variable global
+                allPokemons = loadedPokemons;
+
+                // Renderizar la vista
+                renderAllPokemons();
+            } catch (err) {
+                showToast('Error', 'No se pudieron cargar los Pokémon del sistema.', 'danger');
+            }
+        }
+
+        // Pintar la grilla de todos los pokémones
+        function renderAllPokemons() {
+            const grid = document.getElementById('allPokemonsGrid');
+            grid.innerHTML = '';
+
+            let filtered = allPokemons;
+            if (activeFilter !== 'ALL') {
+                filtered = allPokemons.filter(p => p.tipoPokemon && p.tipoPokemon.uuid === activeFilter);
+            }
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `
+                    <div class="empty-state">
+                        <span class="empty-icon">🔎</span>
+                        <p class="empty-text">No se encontraron Pokémon registrados de este tipo.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            filtered.forEach(p => {
+                const isCaptured = capturedPokemonUuids.has(p.uuid);
+                const tipoInfo = TIPOS[p.tipoPokemon?.uuid] || { name: 'Desconocido', class: 'desconocido', color: '#6b7280' };
+                
+                const card = document.createElement('div');
+                card.className = `pokemon-card ${isCaptured ? 'captured' : ''}`;
+                card.style.setProperty('--tipo-color', tipoInfo.color);
+
+                card.innerHTML = `
+                    <span class="pokemon-badge ${tipoInfo.class}">${tipoInfo.name}</span>
+                    <h3 class="pokemon-name">${p.nombre}</h3>
+                    <p class="pokemon-desc">${p.descripcion || 'Sin descripción'}</p>
+                    <div class="pokemon-meta">
+                        <span>Gen: <strong>${p.generacion}</strong></span>
+                        <span>Descubierto: <strong>${p.fechaDescubrimiento}</strong></span>
+                    </div>
+                    ${!isCaptured ? `
+                        <button class="btn" style="margin-top: 1rem; font-size: 0.85rem; padding: 0.5rem 1rem;" onclick="capturePokemon('${p.uuid}', '${p.nombre}')">
+                            ⚽ Capturar
+                        </button>
+                    ` : ''}
+                `;
+                
+                grid.appendChild(card);
+            });
+        }
+
+        // Pintar la grilla de pokémones capturados por el entrenador
+        function renderCapturedPokemons(list) {
+            const grid = document.getElementById('capturedPokemonsGrid');
+            grid.innerHTML = '';
+
+            if (list.length === 0) {
+                grid.innerHTML = `
+                    <div class="empty-state">
+                        <span class="empty-icon">🎒</span>
+                        <p class="empty-text">Aún no has capturado ningún Pokémon. ¡Ve al Centro de Captura!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            list.forEach(p => {
+                const tipoInfo = TIPOS[p.tipoPokemon?.uuid] || { name: 'Desconocido', class: 'desconocido', color: '#6b7280' };
+                
+                const card = document.createElement('div');
+                card.className = 'pokemon-card';
+                card.style.setProperty('--tipo-color', tipoInfo.color);
+
+                card.innerHTML = `
+                    <span class="pokemon-badge ${tipoInfo.class}">${tipoInfo.name}</span>
+                    <h3 class="pokemon-name">${p.nombre}</h3>
+                    <p class="pokemon-desc">${p.descripcion || 'Sin descripción'}</p>
+                    <div class="pokemon-meta">
+                        <span>Gen: <strong>${p.generacion}</strong></span>
+                        <span>Descubierto: <strong>${p.fechaDescubrimiento}</strong></span>
+                    </div>
+                `;
+                
+                grid.appendChild(card);
+            });
+        }
+
+        // Filtrar Pokémon por tipo
+        function filterPokemons(tipoUuid, btnElement) {
+            activeFilter = tipoUuid;
+            
+            // Manejar clases activas del botón de filtro
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            btnElement.classList.add('active');
+
+            renderAllPokemons();
+        }
+
+        // Capturar Pokémon (Asociar entrenador con pokemon)
+        async function capturePokemon(pokemonUuid, pokemonNombre) {
+            if (!currentTrainerUuid) {
+                showToast('Acceso Requerido', 'Inicia sesión con un entrenador antes de capturar Pokémon.', 'danger');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/entrenador/${currentTrainerUuid}/pokemons/${pokemonUuid}`, {
+                    method: 'POST'
+                });
+
+                const data = await response.json();
+
+                if (!response.ok || data.error) {
+                    throw new Error(data.message || 'Error al intentar capturar el Pokémon');
+                }
+
+                showToast('¡Atrapado!', `Has capturado a ${pokemonNombre} con éxito.`, 'success');
+                
+                // Actualizar la mochila
+                await loadCapturedPokemons();
+                // Actualizar listado general
+                renderAllPokemons();
+            } catch (err) {
+                showToast('Error de Captura', err.message, 'danger');
+            }
+        }
+
+        // Registrar un nuevo Pokémon en el sistema
+        async function registerNewPokemon() {
+            const nombre = document.getElementById('pokeNombre').value.trim();
+            const descripcion = document.getElementById('pokeDesc').value.trim();
+            const fechaDescubrimiento = document.getElementById('pokeFecha').value;
+            const generacion = parseInt(document.getElementById('pokeGeneracion').value);
+            const tipoPokemon = document.getElementById('pokeTipo').value;
+
+            try {
+                const response = await fetch(`${API_BASE}/pokemons`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        nombre,
+                        descripcion,
+                        fechaDescubrimiento,
+                        generacion,
+                        tipoPokemon
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Error al registrar el Pokémon');
+                }
+
+                showToast('Registro Exitoso', `Se ha registrado a ${nombre} en el sistema.`, 'success');
+
+                // Limpiar formulario y restablecer valores por defecto
+                document.getElementById('registerPokemonForm').reset();
+                document.getElementById('pokeFecha').value = new Date().toISOString().split('T')[0];
+
+                // Volver a cargar el listado general
+                await loadAllPokemons();
+            } catch (err) {
+                showToast('Error de Registro', err.message, 'danger');
+            }
+        }
+    </script>
+</body>
+</html>
