@@ -46,6 +46,14 @@ Una vez levantado el servidor, puedes acceder a los siguientes enlaces en tu nav
   * **User Name:** `sa`
   * **Password:** *(dejar vacío)*
 
+### 🌐 Acceso desde otros dispositivos (Misma red local)
+Si el profesor u otro usuario desea abrir la interfaz o Swagger desde otra computadora o dispositivo conectado a la misma red:
+1. Obtén tu dirección IP local ejecutando el comando `ipconfig` en la terminal (busca la **Dirección IPv4**, por ejemplo: `192.168.1.15`).
+2. En el navegador del otro dispositivo, reemplaza `localhost` por tu IP local:
+   * **Frontend:** `http://192.168.1.15:8080/`
+   * **Swagger:** `http://192.168.1.15:8080/swagger-ui.html`
+3. *Nota:* Si la conexión falla en el otro dispositivo, asegúrate de desactivar temporalmente el Firewall de Windows en la computadora que ejecuta el servidor para permitir tráfico en el puerto `8080`.
+
 ---
 
 ## 📋 Datos de Prueba Precargados (Base de Datos Inicial)
